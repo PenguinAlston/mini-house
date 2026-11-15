@@ -403,6 +403,13 @@ cyl(atticG, 0.3,0.32,1.7, -4.5, 15.6, -8.2, M.cactus);
   const arm = cyl(atticG, 0.2,0.2,0.8, -4.1, 16.2, -8.2, M.cactus);
   arm.rotation.z = 0.7;
 }
+// 心形窗木质包边与窗台，强化窗洞的立体层次
+const heartTrim = new THREE.Mesh(new THREE.TorusGeometry(1.35,0.11,8,48), M.plyDark);
+heartTrim.position.set(-15.5,18.15,5.12); heartTrim.scale.set(1.15,0.92,0.45); atticG.add(heartTrim);
+box(atticG,4.8,0.28,0.9,-15.5,17.35,5.0,M.plyDark);
+// 墙面踢脚线与竖向装饰木条
+box(atticG,11.8,0.22,0.28,-6,14.35,4.95,M.plyDark);
+[-11,-8.5,-6,-3.5].forEach(x=>box(atticG,0.12,5.9,0.12,x,14.35,4.98,M.plyDark));
 // LED 吊灯
 cyl(atticG, 0.03,0.03,0.6, -2, 20.1, -4, M.frame, 6);
 {
