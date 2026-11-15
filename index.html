@@ -4,8 +4,19 @@
 <meta charset="UTF-8">
 <title>微型小屋设计稿 - Three.js</title>
 <style>
-body { margin:0; overflow:hidden; background:#f5f5f5; font-family: system-ui, sans-serif; }
-#panel { position:absolute; top:15px; left:15px; background:rgba(255,255,255,0.92); padding:15px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1); z-index:100; }
+body { margin:0; overflow:hidden; background:#f5f5f5; font-family: Inter, "PingFang SC", system-ui, sans-serif; color:#46372b; }
+#panel { position:absolute; top:20px; left:20px; width:238px; box-sizing:border-box; background:rgba(255,250,242,.94); backdrop-filter:blur(16px); padding:18px; border:1px solid rgba(139,99,62,.16); border-radius:16px; box-shadow:0 12px 40px rgba(76,48,25,.13); z-index:100; }
+#panel b { display:block; font-size:17px; letter-spacing:.04em; color:#61432e; }
+#panel .eyebrow { color:#b77a4c; font-size:10px; letter-spacing:.18em; margin-bottom:5px; }
+#panel input[type=range] { accent-color:#bd7950; width:100% !important; }
+#panel button { font:inherit; font-size:12px; }
+#panel .hint { color:#9b8978; font-size:11px; line-height:1.6; margin-top:12px; }
+#parts { position:absolute; right:20px; top:20px; z-index:100; width:190px; padding:14px; border-radius:15px; background:rgba(255,250,242,.9); border:1px solid rgba(139,99,62,.14); box-shadow:0 10px 32px rgba(76,48,25,.1); backdrop-filter:blur(14px); }
+#parts strong { font-size:12px; letter-spacing:.08em; color:#77543a; display:block; margin:2px 4px 9px; }
+.part-btn { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; padding:8px 9px; margin:3px 0; border:0; border-radius:8px; background:transparent; color:#6d5948; text-align:left; cursor:pointer; }
+.part-btn:hover,.part-btn.active { background:#f0e1d0; color:#8d5638; }
+.part-btn small { color:#b69b80; font-size:10px; }
+@media(max-width:700px){ #panel{top:10px;left:10px;width:205px;padding:13px} #parts{right:10px;top:auto;bottom:10px;width:160px;max-height:35vh;overflow:auto;padding:10px} }
 button { margin:4px; padding:8px 14px; border:none; background:#ff6b35; color:white; border-radius:6px; cursor:pointer; }
 button:hover { background:#e55a2b; }
 .label { background:rgba(255,255,255,0.95); color:#c0392b; font-size:11px; padding:2px 5px; border-radius:3px; white-space:pre; text-align:center; border:1px solid #eee; box-shadow:0 1px 4px rgba(0,0,0,0.25); pointer-events:none; }
@@ -13,15 +24,18 @@ button:hover { background:#e55a2b; }
 </head>
 <body>
 <div id="panel">
-  <b>微型小屋设计稿</b><br>
+  <div class="eyebrow">MINIATURE · ATELIER</div>
+  <b>森林里的微型小屋</b>
+  <div class="hint">拖动旋转 · 滚轮缩放 · 拖动滑杆查看结构分解</div>
   <div style="margin:8px 0 2px;font-size:13px;color:#555;">拆分程度</div>
   <input type="range" id="explode" min="0" max="1" step="0.01" value="0" style="width:170px;">
   <div style="margin-top:6px;">
     <button id="reset">重置</button>
     <button id="hideLabels">隐藏尺寸</button>
   </div>
-  <div id="msg" style="margin-top:8px;font-size:13px;color:#555;">当前：组装状态</div>
+  <div id="msg" style="margin-top:8px;font-size:12px;color:#8a7059;">当前：完整组装</div>
 </div>
+<div id="parts"><strong>结构 · COMPONENTS</strong><div id="partList"></div></div>
 
 <script type="importmap">
 {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
@@ -278,6 +292,15 @@ function makeBird(o={}){
     const l1 = new THREE.Mesh(new THREE.SphereGeometry(0.16,10,8), lm); l1.position.set(0.14,1.12,0); l1.scale.set(1.5,0.5,0.8); l1.rotation.z=-0.4; g.add(l1);
     const l2 = new THREE.Mesh(new THREE.SphereGeometry(0.14,10,8), lm); l2.position.set(-0.13,1.1,0); l2.scale.set(1.3,0.5,0.8); l2.rotation.z=0.5; g.add(l2);
   }
+  // 翅膀、尾羽与小爪趾，让摆件轮廓更接近手作陶偶
+  const wingMat = new THREE.MeshStandardMaterial({color:o.wing ?? o.body ?? 0xf2b3c1, roughness:0.72});
+  [-1,1].forEach(side=>{
+    const wing = new THREE.Mesh(new THREE.SphereGeometry(0.42,14,10), wingMat);
+    wing.position.set(side*0.78,-0.05,0.12); wing.scale.set(0.55,0.9,0.34);
+    wing.rotation.z = side*-0.35; g.add(wing);
+  });
+  const tail = new THREE.Mesh(new THREE.SphereGeometry(0.25,12,8), wingMat);
+  tail.position.set(0,-0.2,-0.82); tail.scale.set(0.75,0.7,1.25); g.add(tail);
   if (o.belly){
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.62,16,12),
       new THREE.MeshStandardMaterial({color:o.belly, roughness:0.65}));
@@ -429,6 +452,37 @@ box(roofG, 54,1.2,22, 0, 21.4, -3, M.roofSlab);
   straw.instanceMatrix.needsUpdate = true;
   if (straw.instanceColor) straw.instanceColor.needsUpdate = true;
   roofG.add(straw);
+
+  // 屋脊与檩条：在茅草下形成可读的传统木构架
+  const ridge = new THREE.Mesh(new THREE.BoxGeometry(54,0.7,0.85), M.plyDark);
+  ridge.position.set(0,26.8,-3); ridge.castShadow=true; roofG.add(ridge);
+  for(let x=-25;x<=25;x+=5){
+    for(const side of [-1,1]){
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,20.5), M.plyDark);
+      beam.position.set(x,24.9,-3+side*0.2);
+      beam.rotation.x = side*0.36;
+      beam.castShadow=true; roofG.add(beam);
+    }
+  }
+  // 顺坡铺设的细茅草束，采用实例化网格保持性能
+  const fiberGeo = new THREE.CylinderGeometry(0.025,0.045,1,5);
+  const fiberMat = new THREE.MeshStandardMaterial({color:0xd5b56f,roughness:1});
+  const fibers = new THREE.InstancedMesh(fiberGeo,fiberMat,2600);
+  const ob = new THREE.Object3D(); const fiberColor = new THREE.Color();
+  for(let i=0;i<2600;i++){
+    const x=-26+Math.random()*52, z=-13+Math.random()*20;
+    const side=z < -3 ? -1 : 1;
+    const y=26.5-Math.abs(z+3)*0.34;
+    ob.position.set(x,y,z);
+    ob.rotation.set(side*0.34,Math.random()*Math.PI,(Math.random()-0.5)*0.08);
+    ob.scale.set(0.7+Math.random()*0.6,1.2+Math.random()*1.8,0.7+Math.random()*0.5);
+    ob.updateMatrix(); fibers.setMatrixAt(i,ob.matrix);
+    fiberColor.setHSL(0.105+Math.random()*0.035,0.38+Math.random()*0.2,0.48+Math.random()*0.24);
+    fibers.setColorAt(i,fiberColor);
+  }
+  fibers.castShadow=true; fibers.instanceMatrix.needsUpdate=true;
+  if(fibers.instanceColor) fibers.instanceColor.needsUpdate=true;
+  roofG.add(fibers);
 }
 
 /* ---------- 8. 梯子 ×2 + 圆台 ---------- */
@@ -493,17 +547,43 @@ const furnG = makePart('软装家具\n圆桌/凳/汤锅/蛋糕', -3, 9.5, 6.5);
   [[-2,-0.7],[2,-0.7],[-2,0.7],[2,0.7]].forEach(p=> box(bench, 0.45,1.6,0.45, p[0], 0, p[1], M.accent));
   furnG.add(bench);
 
+  // 桌面细节：桌沿包边、桌脚横撑与蛋糕纸托纹
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(4.12,0.1,8,48), M.ply);
+  rim.rotation.x=Math.PI/2; rim.position.set(13,4.0,3.5); furnG.add(rim);
   // 黄色汤锅
-  const pot = new THREE.Group();
   pot.position.set(-7.5, FLOOR, 4.5);
   const pb = ball(pot, 1.35, 0, 1.05, 0, M.potY, 1, 0.8, 1);
   cyl(pot, 1.1,1.1,0.25, 0, 1.95, 0, M.potY, 16);
-  ball(pot, 0.22, 0, 2.3, 0, M.potY);
+  // 双侧锅耳与锅盖旋钮
+  [-1,1].forEach(side=>{
+    const handle=new THREE.Mesh(new THREE.TorusGeometry(0.34,0.12,8,16),M.potY);
+    handle.position.set(side*1.25,1.72,0); handle.rotation.y=Math.PI/2; pot.add(handle);
+  });
+  const lid=new THREE.Mesh(new THREE.SphereGeometry(1.05,18,10,0,Math.PI*2,0,Math.PI/2),M.potY);
+  lid.position.y=2.08; lid.scale.y=0.28; pot.add(lid);
+  ball(pot, 0.22, 0, 2.38, 0, M.potY);
   furnG.add(pot);
 
   // 地板上的牛油果小鸡
   placeBird(furnG, {body:0xa9c25e, leaf:1}, -11.5, FLOOR, 2.2, 1.25, 0.5);
 }
+
+/* ---------- 结构目录与部件聚焦 ---------- */
+const partList = document.getElementById('partList');
+const partNames = ['波浪底座','拱门背墙','三层展示柜','右侧高柜','阁楼楼板','阁楼小屋','茅草屋顶','双木梯与圆台','软装与家具'];
+parts.forEach((part,i)=>{
+  const btn=document.createElement('button');
+  btn.className='part-btn';
+  btn.innerHTML='<span>'+partNames[i]+'</span><small>0'+(i+1)+'</small>';
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const world=new THREE.Vector3(); part.getWorldPosition(world);
+    controls.target.copy(world);
+    camera.position.copy(world.clone().add(new THREE.Vector3(30,20,34)));
+  });
+  partList.appendChild(btn);
+});
 
 /* ---------- 拆分偏移 ---------- */
 baseG.userData.off.set(0, 0, 0);
@@ -530,7 +610,7 @@ const slider = document.getElementById('explode');
 function updateExplode(t){
   const e = t*t*(3-2*t);   // smoothstep 缓动，滑杆拖动更顺滑
   parts.forEach(p => p.position.copy(p.userData.off).multiplyScalar(e));
-  msg.textContent = t < 0.01 ? '当前：组装状态' : `当前：拆分 ${Math.round(t*100)}%`;
+  msg.textContent = t < 0.01 ? '当前：完整组装' : `当前：结构拆分 ${Math.round(t*100)}%`;
 }
 slider.oninput = () => updateExplode(parseFloat(slider.value));
 document.getElementById('reset').onclick = () => {
