@@ -17,6 +17,14 @@ body { margin:0; overflow:hidden; background:#f5f5f5; font-family: Inter, "PingF
 .part-btn:hover,.part-btn.active { background:#f0e1d0; color:#8d5638; }
 .part-btn small { color:#b69b80; font-size:10px; }
 @media(max-width:700px){ #panel{top:10px;left:10px;width:205px;padding:13px} #parts{right:10px;top:auto;bottom:10px;width:160px;max-height:35vh;overflow:auto;padding:10px} }
+#buildGuide { position:absolute; left:20px; bottom:18px; z-index:100; width:270px; max-height:34vh; overflow:auto; box-sizing:border-box; padding:14px 16px; border-radius:14px; background:rgba(255,250,242,.94); border:1px solid rgba(139,99,62,.16); box-shadow:0 10px 30px rgba(76,48,25,.12); backdrop-filter:blur(14px); }
+#buildGuide strong { display:block; color:#77543a; font-size:12px; letter-spacing:.08em; margin-bottom:8px; }
+#buildGuide .guideMeta { color:#9b8067; font-size:10px; line-height:1.5; }
+#buildGuide .guideTitle { color:#61432e; font-size:14px; font-weight:700; margin:7px 0 5px; }
+#buildGuide .guideBody { color:#6d5948; font-size:11px; line-height:1.65; white-space:pre-line; }
+#buildGuide .guideNav { display:flex; gap:6px; margin-top:8px; }
+#buildGuide button { margin:0; padding:6px 9px; font-size:11px; background:#8d6848; }
+@media(max-width:700px){ #buildGuide{left:10px;bottom:10px;width:calc(100vw - 190px);max-height:25vh;padding:10px} #buildGuide .guideBody{font-size:10px} }
 button { margin:4px; padding:8px 14px; border:none; background:#ff6b35; color:white; border-radius:6px; cursor:pointer; }
 button:hover { background:#e55a2b; }
 .label { background:rgba(255,255,255,0.95); color:#c0392b; font-size:11px; padding:2px 5px; border-radius:3px; white-space:pre; text-align:center; border:1px solid #eee; box-shadow:0 1px 4px rgba(0,0,0,0.25); pointer-events:none; }
@@ -36,6 +44,7 @@ button:hover { background:#e55a2b; }
   <div id="msg" style="margin-top:8px;font-size:12px;color:#8a7059;">当前：完整组装</div>
 </div>
 <div id="parts"><strong>结构 · COMPONENTS</strong><div id="partList"></div></div>
+<div id="buildGuide"><strong>手工制作指南 · BUILD GUIDE</strong><div class="guideMeta">暂按底板标注 480 mm 推算：模型 1 单位约等于 10 mm。尺寸为首轮估算，裁切前请实物复核。</div><div class="guideTitle" id="guideTitle">第 1 步 · 底板与定位</div><div class="guideBody" id="guideBody"></div><div class="guideNav"><button id="prevStep">上一步</button><button id="nextStep">下一步</button><button id="showSelected">制作顺序</button></div></div>
 
 <script type="importmap">
 {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
@@ -575,6 +584,35 @@ const furnG = makePart('软装家具\n圆桌/凳/汤锅/蛋糕', -3, 9.5, 6.5);
   placeBird(furnG, {body:0xa9c25e, leaf:1}, -11.5, FLOOR, 2.2, 1.25, 0.5);
 }
 
+/* ---------- 实物制作参数与装配顺序 ---------- */
+const craftInfo=[
+{name:'波浪底座',size:'约 480×340×12 mm',material:'3–5 mm 椴木板/桦木夹板',tool:'纸样、曲线锯、钢尺、砂纸',method:'画中心线和结构定位线后切外轮廓；边缘分层打磨，底面校平。',check:'底板翘曲会影响整屋垂直度。'},
+{name:'拱门背墙',size:'模型标注约 160×130 mm',material:'2–3 mm 椴木板或灰板',tool:'直角尺、手钻、细锯、砂纸',method:'先做拱门纸样，钻穿线孔后切内弧；干装校正垂直再粘到底板。',check:'墙脚接触面需平直，拱门两侧保留粘接边。'},
+{name:'三层展示柜',size:'模型标注约 180×122×70 mm',material:'1.5–2 mm 木板、1–1.5 mm 木条',tool:'直角夹、切割垫、木工胶',method:'先拼侧板和背板，再按同一基准线安装层板；封背前预留灯带走线。',check:'用纸板玩偶样板检查层间净高，层板保持水平。'},
+{name:'右侧高柜',size:'模型标注约 80×195×80 mm',material:'1.5–2 mm 椴木板、细木条',tool:'直角夹、钢尺、木工胶',method:'先拼柜体框架，再装背板、层板和灯带；走线从背部隐藏。',check:'背板作为方正基准，检查左右侧板平行。'},
+{name:'阁楼楼板',size:'模型标注约 400×190×8 mm',material:'2–3 mm 夹板，底部加 3×3 mm 木方托梁',tool:'直角尺、夹具、手钻',method:'先固定托梁，再安装楼板；确认水平后再粘阁楼墙体。',check:'大跨度薄板需托撑，不能只靠两端胶接。'},
+{name:'阁楼小屋',size:'按模型墙高与窗洞放样',material:'1.5–2 mm 木板，窗框用 1–2 mm 木条',tool:'纸样、手钻、细锯、木工胶',method:'先切心形窗并打磨，再组装侧墙、背墙和顶板，最后包窗框。',check:'心形窗内角先钻孔再慢切，避免崩边。'},
+{name:'茅草屋顶',size:'模型投影约 540×220 mm（待核）',material:'1 mm 木条作椽架；仿真茅草/纸绳/麻纤维',tool:'剪刀、镊子、低温热熔胶或白胶',method:'先做屋脊梁和椽条，再从檐口向屋脊分层铺纤维，每层压住上一层。',check:'当前模型茅草是视觉示意，不是准确坡面/用量；先做屋面小样。'},
+{name:'双木梯与圆台',size:'按阁楼实际高度现场配长',material:'1.5–2 mm 木条，圆台用木片叠层',tool:'小锯、砂纸、角度规、胶水',method:'制作等长梯梁并标踏棍位置，再逐级粘接；圆台先固定支柱。',check:'梯脚接触点、倾角和踏棍间距需一致。'},
+{name:'软装与家具',size:'按空间净尺寸缩放',material:'木片/木条、轻质黏土、树脂或纸黏土',tool:'刻刀、圆棒、砂纸、白胶/瞬干胶',method:'桌椅先做木结构；锅、蛋糕、草莓和玩偶独立塑形上色，干摆后再固定。',check:'先确认柜格净高和取放空间，不要过早永久粘死。'}
+];
+const craftSteps=[
+['底板与定位','材料：3–5 mm 椴木板/桦木夹板，底板约 480×340 mm。画中心线、墙体和柜体定位线，再切外轮廓。','在平整玻璃面检查底板翘曲。'],
+['墙体与拱门','按纸样切背墙和拱门内孔；干装校正垂直后再用直角夹粘接。','先不封顶，方便安装柜体和布线。'],
+['展示柜与侧柜','拼柜体框架，再按基准线安装层板；预留 LED 灯带和走线孔。','用纸板样件检查玩偶净高和层间距。'],
+['阁楼承托与楼板','先加托梁，再安装楼板；检查水平与承托点。','大跨度薄板需托梁，防止下垂。'],
+['阁楼小屋与心形窗','切窗洞并打磨，组装墙体，最后粘窗框和窗台。','先钻孔再切曲线，避免木片开裂。'],
+['屋顶骨架与茅草','先做屋脊梁和椽条，再由檐口向上分层铺茅草。','先做小样测试纤维密度、胶水和干燥效果。'],
+['楼梯、家具与摆件','梯子先组装后定位；桌椅和玩偶分开制作、上色、干摆。','摆件最后固定，保留取放和维修空间。'],
+['灯光测试与收尾','测试 LED 与电池盒，再遮蔽导线、补漆、清理胶痕并安装装饰。','确认电池可更换，导线不被结构压住。']
+];
+let activeCraftStep=0;
+function renderCraftStep(){const q=craftSteps[activeCraftStep];document.getElementById('guideTitle').textContent='第 '+(activeCraftStep+1)+' 步 · '+q[0];document.getElementById('guideBody').textContent=q[1]+'\n注意：'+q[2];}
+document.getElementById('prevStep').onclick=()=>{activeCraftStep=Math.max(0,activeCraftStep-1);renderCraftStep();};
+document.getElementById('nextStep').onclick=()=>{activeCraftStep=Math.min(craftSteps.length-1,activeCraftStep+1);renderCraftStep();};
+document.getElementById('showSelected').onclick=renderCraftStep;
+renderCraftStep();
+
 /* ---------- 结构目录与部件聚焦 ---------- */
 const partList = document.getElementById('partList');
 const partNames = ['波浪底座','拱门背墙','三层展示柜','右侧高柜','阁楼楼板','阁楼小屋','茅草屋顶','双木梯与圆台','软装与家具'];
@@ -585,6 +623,9 @@ parts.forEach((part,i)=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    const info=craftInfo[i];
+    document.getElementById('guideTitle').textContent=info.name+' · 零件制作卡';
+    document.getElementById('guideBody').textContent='参考尺寸：'+info.size+'\n材料：'+info.material+'\n工具：'+info.tool+'\n制作：'+info.method+'\n检查：'+info.check;
     const world=new THREE.Vector3(); part.getWorldPosition(world);
     controls.target.copy(world);
     camera.position.copy(world.clone().add(new THREE.Vector3(30,20,34)));
