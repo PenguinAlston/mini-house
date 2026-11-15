@@ -440,73 +440,104 @@ const atticLight = new THREE.PointLight(0xffbf6a, 45, 30, 2);
 atticLight.position.set(-2, 19.3, -4);
 atticG.add(atticLight);
 
-/* ---------- 7. 茅草屋顶 ---------- */
-const roofG = makePart('茅草屋顶\n540×220·蓬松茅草', 0, 27.5, -3);
-box(roofG, 54,1.2,22, 0, 21.4, -3, M.roofSlab);
+/* ---------- 7. 茅草屋顶：双坡基层 + 成束顺坡叠铺 ---------- */
+const roofG = makePart('茅草屋顶\n双坡骨架·分层茅草', 0, 27.5, -3);
 {
-  const MAX = 1500;
-  const straw = new THREE.InstancedMesh(
-    new THREE.CylinderGeometry(0.055,0.09,1,5),
-    new THREE.MeshStandardMaterial({color:0xffffff, roughness:1}),
-    MAX
-  );
-  const dummy = new THREE.Object3D(), col = new THREE.Color();
-  let idx = 0;
-  function strawAt(x,z,tiltX,tiltZ,len,sink=0.45){
-    if (idx >= MAX) return;
-    dummy.position.set(x, 22.6 + len/2 - sink, z);
-    dummy.rotation.set(tiltX, Math.random()*Math.PI, tiltZ);
-    dummy.scale.set(0.8+Math.random()*0.5, len, 0.8+Math.random()*0.5);
-    dummy.updateMatrix();
-    straw.setMatrixAt(idx, dummy.matrix);
-    col.setHSL(0.105+Math.random()*0.03, 0.42+Math.random()*0.2, 0.6+Math.random()*0.2);
-    straw.setColorAt(idx, col);
-    idx++;
-  }
-  for (let i=0;i<980;i++) strawAt(-26+Math.random()*52, -13.4+Math.random()*20.4, (Math.random()-0.5)*0.35, (Math.random()-0.5)*0.35, 1.5+Math.random()*1.1);
-  for (let i=0;i<170;i++) strawAt(-26+Math.random()*52, 7.3+Math.random()*1.2, 0.7+Math.random()*0.5, (Math.random()-0.5)*0.3, 1.9+Math.random()*1.2, 0.6);
-  for (let i=0;i<110;i++) strawAt(-26+Math.random()*52, -13.6+Math.random()*0.8, -0.6-Math.random()*0.4, (Math.random()-0.5)*0.3, 1.8+Math.random()*1.0, 0.6);
-  for (let i=0;i<90;i++){
-    const left = Math.random()<0.5;
-    strawAt(left ? -26.6-Math.random()*0.8 : 26.6+Math.random()*0.8, -13.4+Math.random()*20.4,
-      (Math.random()-0.5)*0.3, left ? 0.7+Math.random()*0.4 : -0.7-Math.random()*0.4, 1.8+Math.random(), 0.6);
-  }
-  straw.count = idx;
-  straw.castShadow = straw.receiveShadow = true;
-  straw.instanceMatrix.needsUpdate = true;
-  if (straw.instanceColor) straw.instanceColor.needsUpdate = true;
-  roofG.add(straw);
+  const ridgeZ = -3, ridgeY = 26.35, halfWidth = 11, slope = 0.34;
+  const angle = Math.atan(slope);
+  const roofLength = halfWidth / Math.cos(angle);
 
-  // 屋脊与檩条：在茅草下形成可读的传统木构架
-  const ridge = new THREE.Mesh(new THREE.BoxGeometry(54,0.7,0.85), M.plyDark);
-  ridge.position.set(0,26.8,-3); ridge.castShadow=true; roofG.add(ridge);
-  for(let x=-25;x<=25;x+=5){
-    for(const side of [-1,1]){
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,20.5), M.plyDark);
-      beam.position.set(x,24.9,-3+side*0.2);
-      beam.rotation.x = side*0.36;
-      beam.castShadow=true; roofG.add(beam);
+  // 两片连续的斜屋面基层：先遮住内部，再在其上铺设茅草
+  for (const side of [-1, 1]) {
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(54, 0.42, roofLength),
+      new THREE.MeshStandardMaterial({color:0x79512d, roughness:1}));
+    panel.position.set(0, ridgeY - halfWidth*slope/2, ridgeZ + side*halfWidth/2);
+    panel.rotation.x = side*angle;
+    panel.castShadow = panel.receiveShadow = true;
+    roofG.add(panel);
+  }
+
+  // 屋脊梁、成对椽条与顺屋檐方向的横向挂草条
+  const ridge = new THREE.Mesh(new THREE.BoxGeometry(54,0.75,0.9), M.plyDark);
+  ridge.position.set(0,ridgeY+0.12,ridgeZ);
+  ridge.castShadow = true; roofG.add(ridge);
+
+  for (let x=-25; x<=25; x+=3.6) {
+    for (const side of [-1,1]) {
+      const rafter = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.42,roofLength+0.4), M.plyDark);
+      rafter.position.set(x,ridgeY-halfWidth*slope/2,ridgeZ+side*halfWidth/2);
+      rafter.rotation.x = side*angle;
+      rafter.castShadow = true; roofG.add(rafter);
     }
   }
-  // 顺坡铺设的细茅草束，采用实例化网格保持性能
-  const fiberGeo = new THREE.CylinderGeometry(0.025,0.045,1,5);
-  const fiberMat = new THREE.MeshStandardMaterial({color:0xd5b56f,roughness:1});
-  const fibers = new THREE.InstancedMesh(fiberGeo,fiberMat,2600);
-  const ob = new THREE.Object3D(); const fiberColor = new THREE.Color();
-  for(let i=0;i<2600;i++){
-    const x=-26+Math.random()*52, z=-13+Math.random()*20;
-    const side=z < -3 ? -1 : 1;
-    const y=26.5-Math.abs(z+3)*0.34;
-    ob.position.set(x,y,z);
-    ob.rotation.set(side*0.34,Math.random()*Math.PI,(Math.random()-0.5)*0.08);
-    ob.scale.set(0.7+Math.random()*0.6,1.2+Math.random()*1.8,0.7+Math.random()*0.5);
-    ob.updateMatrix(); fibers.setMatrixAt(i,ob.matrix);
-    fiberColor.setHSL(0.105+Math.random()*0.035,0.38+Math.random()*0.2,0.48+Math.random()*0.24);
-    fibers.setColorAt(i,fiberColor);
+  for (const side of [-1,1]) {
+    for (let d=1.1; d<10.8; d+=1.85) {
+      const batten = new THREE.Mesh(new THREE.BoxGeometry(54,0.2,0.24), M.plyDark);
+      batten.position.set(0,ridgeY-d*slope,ridgeZ+side*d);
+      batten.rotation.x = side*angle;
+      batten.castShadow = true; roofG.add(batten);
+    }
+    const fascia = new THREE.Mesh(new THREE.BoxGeometry(54,0.55,0.42), M.plyDark);
+    fascia.position.set(0,ridgeY-halfWidth*slope-0.05,ridgeZ+side*(halfWidth+0.12));
+    fascia.rotation.x = side*angle;
+    fascia.castShadow = true; roofG.add(fascia);
   }
-  fibers.castShadow=true; fibers.instanceMatrix.needsUpdate=true;
-  if(fibers.instanceColor) fibers.instanceColor.needsUpdate=true;
-  roofG.add(fibers);
+
+  // 茅草不再随机竖插：每根草茎沿屋面坡向排列，按行错缝叠压。
+  // 每束由多根近乎平行的细茎组成，束与束之间留有轻微自然起伏。
+  const capacity = 6200;
+  const stemGeo = new THREE.CylinderGeometry(0.022,0.032,1,5);
+  const stems = new THREE.InstancedMesh(stemGeo,
+    new THREE.MeshStandardMaterial({color:0xd0aa62, roughness:1}), capacity);
+  const dummy = new THREE.Object3D();
+  const tint = new THREE.Color();
+  const downSlope = new THREE.Vector3(0,-Math.sin(angle),0);
+  let count = 0;
+  for (const side of [-1,1]) {
+    const direction = new THREE.Vector3(0,-Math.sin(angle),side*Math.cos(angle)).normalize();
+    const orient = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+    for (let row=0; row<6; row++) {
+      const distance = 1.0 + row*1.78;
+      const stagger = row%2 ? 0.48 : 0;
+      for (let bundle=-22; bundle<=22; bundle++) {
+        const bundleX = bundle*1.18 + stagger;
+        const strands = 11 + (bundle%3===0 ? 3 : 0);
+        for (let k=0; k<strands; k++) {
+          if (count>=capacity) break;
+          const x = bundleX + (Math.random()-0.5)*0.62;
+          const along = (Math.random()-0.5)*0.72;
+          const d = distance + along;
+          const length = 3.65 + Math.random()*0.42;
+          const centerD = d + length*0.12;
+          dummy.position.set(
+            x,
+            ridgeY - centerD*slope + 0.12 + Math.random()*0.12,
+            ridgeZ + side*centerD
+          );
+          dummy.quaternion.copy(orient);
+          dummy.rotateY((Math.random()-0.5)*0.035);
+          dummy.rotateZ((Math.random()-0.5)*0.045);
+          dummy.scale.set(0.82+Math.random()*0.28,length,0.82+Math.random()*0.25);
+          dummy.updateMatrix();
+          stems.setMatrixAt(count,dummy.matrix);
+          tint.setHSL(0.105+Math.random()*0.018,0.42+Math.random()*0.12,0.43+Math.random()*0.13);
+          stems.setColorAt(count,tint);
+          count++;
+        }
+      }
+    }
+  }
+  stems.count = count;
+  stems.castShadow = stems.receiveShadow = true;
+  stems.instanceMatrix.needsUpdate = true;
+  if (stems.instanceColor) stems.instanceColor.needsUpdate = true;
+  roofG.add(stems);
+
+  // 屋脊压草帽：用一排短束盖住两坡交接线，避免露出尖锐梁角
+  const cap = new THREE.Mesh(new THREE.BoxGeometry(54,0.48,1.25),
+    new THREE.MeshStandardMaterial({color:0xb58a4c, roughness:1}));
+  cap.position.set(0,ridgeY+0.34,ridgeZ);
+  cap.castShadow = true; roofG.add(cap);
 }
 
 /* ---------- 8. 梯子 ×2 + 圆台 ---------- */
