@@ -250,13 +250,21 @@ const wallG = makePart('背墙\n拱门洞 160×130', -13, 16, -9);
 
 /* ---------- 3. 中间展示柜（三层 + LED） ---------- */
 const shelfG = makePart('展示柜\n三层·LED暖光 180×122×70', 4, 15.5, -3);
-box(shelfG, 18,0.5,7, 4, FLOOR, -7, M.frame);
-box(shelfG, 18,0.5,7, 4, 12.9, -7, M.frame);
-box(shelfG, 0.6,12.2,7, -4.7, FLOOR, -7, M.frame);
-box(shelfG, 0.6,12.2,7, 12.7, FLOOR, -7, M.frame);
-box(shelfG, 18,12.2,0.3, 4, FLOOR, -10.35, M.frame);
-box(shelfG, 16.8,0.5,6.6, 4, 4.6, -7, M.shelf);
-box(shelfG, 16.8,0.5,6.6, 4, 8.4, -7, M.shelf);
+// 展示柜木作拆为独立可制作板件：底板、顶板、左右侧板、背板、两块层板
+const shBottomG = makePart('展示柜·底板 01', 4, 2.2, -3);
+const shTopG = makePart('展示柜·顶板 02', 4, 13.6, -3);
+const shLeftG = makePart('展示柜·左侧板 03', -4.7, 7.5, -3);
+const shRightG = makePart('展示柜·右侧板 04', 12.7, 7.5, -3);
+const shBackG = makePart('展示柜·背板 05', 4, 7.5, -10.5);
+const shShelf1G = makePart('展示柜·第一层板 06', 4, 4.9, -3);
+const shShelf2G = makePart('展示柜·第二层板 07', 4, 8.7, -3);
+box(shBottomG,18,0.5,7,4,FLOOR,-7,M.frame);
+box(shTopG,18,0.5,7,4,12.9,-7,M.frame);
+box(shLeftG,0.6,12.2,7,-4.7,FLOOR,-7,M.frame);
+box(shRightG,0.6,12.2,7,12.7,FLOOR,-7,M.frame);
+box(shBackG,18,12.2,0.3,4,FLOOR,-10.35,M.frame);
+box(shShelf1G,16.8,0.5,6.6,4,4.6,-7,M.shelf);
+box(shShelf2G,16.8,0.5,6.6,4,8.4,-7,M.shelf);
 // LED 灯带
 box(shelfG, 15.5,0.14,0.3, 4, 4.28, -3.75, M.led, false);
 box(shelfG, 15.5,0.14,0.3, 4, 8.08, -3.75, M.led, false);
@@ -595,7 +603,14 @@ const craftInfo=[
 {name:'阁楼小屋',size:'按模型墙高与窗洞放样',material:'1.5–2 mm 木板，窗框用 1–2 mm 木条',tool:'纸样、手钻、细锯、木工胶',method:'先切心形窗并打磨，再组装侧墙、背墙和顶板，最后包窗框。',check:'心形窗内角先钻孔再慢切，避免崩边。'},
 {name:'茅草屋顶',size:'模型投影约 540×220 mm（待核）',material:'1 mm 木条作椽架；仿真茅草/纸绳/麻纤维',tool:'剪刀、镊子、低温热熔胶或白胶',method:'先做屋脊梁和椽条，再从檐口向屋脊分层铺纤维，每层压住上一层。',check:'当前模型茅草是视觉示意，不是准确坡面/用量；先做屋面小样。'},
 {name:'双木梯与圆台',size:'按阁楼实际高度现场配长',material:'1.5–2 mm 木条，圆台用木片叠层',tool:'小锯、砂纸、角度规、胶水',method:'制作等长梯梁并标踏棍位置，再逐级粘接；圆台先固定支柱。',check:'梯脚接触点、倾角和踏棍间距需一致。'},
-{name:'软装与家具',size:'按空间净尺寸缩放',material:'木片/木条、轻质黏土、树脂或纸黏土',tool:'刻刀、圆棒、砂纸、白胶/瞬干胶',method:'桌椅先做木结构；锅、蛋糕、草莓和玩偶独立塑形上色，干摆后再固定。',check:'先确认柜格净高和取放空间，不要过早永久粘死。'}
+{name:'软装与家具',size:'次要装饰，不作为建筑木作重点',material:'按装饰件另行选材',tool:'按装饰工艺选择',method:'主体建筑和柜体完成后再制作。',check:'本项目优先完成建筑结构。'},
+{name:'展示柜底板',size:'约 180×70×5 mm（模型估算）',material:'1.5–2 mm 木板或夹板',tool:'钢尺、细锯、砂纸、直角夹',method:'按柜体内外宽裁切，先与两侧板干拼校正，再粘接。',check:'底板需与侧板端面齐平。'},
+{name:'展示柜顶板',size:'约 180×70×5 mm（模型估算）',material:'1.5–2 mm 木板或夹板',tool:'钢尺、细锯、砂纸、直角夹',method:'按底板同尺寸裁切，和侧板上端干拼后粘接。',check:'顶板与底板平行，柜体保持方正。'},
+{name:'展示柜左侧板',size:'约 122×70×6 mm（模型估算）',material:'1.5–2 mm 木板',tool:'钢尺、细锯、直角尺',method:'按统一高度裁切，标出层板槽位/定位线，再与底顶板组装。',check:'与右侧板等高，层板定位线镜像一致。'},
+{name:'展示柜右侧板',size:'约 122×70×6 mm（模型估算）',material:'1.5–2 mm 木板',tool:'钢尺、细锯、直角尺',method:'与左侧板同尺寸裁切，标记相同层板高度后粘接。',check:'左右板平行，柜体开口宽度一致。'},
+{name:'展示柜背板',size:'约 180×122×3 mm（模型估算）',material:'1–1.5 mm 薄夹板/椴木板',tool:'细锯、砂纸、木工胶',method:'柜体框架校方后测量净口裁切，背板从后侧定位粘接。',check:'背板用于锁定方正度，粘接前复核对角线。'},
+{name:'展示柜第一层板',size:'约 168×66×5 mm（模型估算）',material:'1.5 mm 木板',tool:'钢尺、细锯、砂纸',method:'按柜内净宽裁切，标高定位后两侧点胶固定。',check:'层板前后边缘平行，安装后检查水平。'},
+{name:'展示柜第二层板',size:'约 168×66×5 mm（模型估算）',material:'1.5 mm 木板',tool:'钢尺、细锯、砂纸',method:'按第一层板相同尺寸裁切，使用同一高度基准治具定位。',check:'与第一层板间距一致，避免影响陈列物高度。'}
 ];
 const craftSteps=[
 ['底板与定位','材料：3–5 mm 椴木板/桦木夹板，底板约 480×340 mm。画中心线、墙体和柜体定位线，再切外轮廓。','在平整玻璃面检查底板翘曲。'],
@@ -616,7 +631,7 @@ renderCraftStep();
 
 /* ---------- 结构目录与部件聚焦 ---------- */
 const partList = document.getElementById('partList');
-const partNames = ['波浪底座','拱门背墙','三层展示柜','右侧高柜','阁楼楼板','阁楼小屋','茅草屋顶','双木梯与圆台','软装与家具'];
+const partNames = ['波浪底座','拱门背墙','三层展示柜摆件/灯光','右侧高柜','阁楼楼板','阁楼小屋','茅草屋顶','双木梯与圆台','软装与家具','展示柜底板','展示柜顶板','展示柜左侧板','展示柜右侧板','展示柜背板','展示柜第一层板','展示柜第二层板'];
 parts.forEach((part,i)=>{
   const btn=document.createElement('button');
   btn.className='part-btn';
@@ -644,6 +659,13 @@ atticG.userData.off.set(-3, 14, 1);
 roofG.userData.off.set(0, 22, 0);
 ladderG.userData.off.set(-12, 0, 7);
 furnG.userData.off.set(5, 0, 10);
+shBottomG.userData.off.set(0,-4,0);
+shTopG.userData.off.set(0,5,0);
+shLeftG.userData.off.set(-5,0,0);
+shRightG.userData.off.set(5,0,0);
+shBackG.userData.off.set(0,0,-5);
+shShelf1G.userData.off.set(0,0,5);
+shShelf2G.userData.off.set(0,0,8);
 
 /* ---------- 地面 ---------- */
 const ground = new THREE.Mesh(new THREE.CircleGeometry(140,48),
