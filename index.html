@@ -566,7 +566,8 @@ const furnG = makePart('软装家具\n圆桌/凳/汤锅/蛋糕', -3, 9.5, 6.5);
   // 桌面细节：桌沿包边、桌脚横撑与蛋糕纸托纹
   const rim = new THREE.Mesh(new THREE.TorusGeometry(4.12,0.1,8,48), M.ply);
   rim.rotation.x=Math.PI/2; rim.position.set(13,4.0,3.5); furnG.add(rim);
-  // 黄色汤锅
+  // 黄色汤锅：独立组，便于手工制作卡片与后续拆分
+  const pot = new THREE.Group();
   pot.position.set(-7.5, FLOOR, 4.5);
   const pb = ball(pot, 1.35, 0, 1.05, 0, M.potY, 1, 0.8, 1);
   cyl(pot, 1.1,1.1,0.25, 0, 1.95, 0, M.potY, 16);
