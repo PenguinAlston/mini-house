@@ -485,7 +485,7 @@ const roofG = makePart('茅草屋顶\n双坡骨架·分层茅草', 0, 27.5, -3);
 
   // 茅草不再随机竖插：每根草茎沿屋面坡向排列，按行错缝叠压。
   // 每束由多根近乎平行的细茎组成，束与束之间留有轻微自然起伏。
-  const capacity = 6200;
+  const capacity = 6600;
   const stemGeo = new THREE.CylinderGeometry(0.022,0.032,1,5);
   const stems = new THREE.InstancedMesh(stemGeo,
     new THREE.MeshStandardMaterial({color:0xd0aa62, roughness:1}), capacity);
